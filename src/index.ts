@@ -1,5 +1,19 @@
 #!/usr/bin/env node
 
-const greet = 'hello'
+import boxen from 'boxen'
 
-console.log(greet)
+const text = `
+- a
+- b
+- c
+- d
+`
+
+console.log(
+  boxen(text, {
+    title: 'list',
+    titleAlignment: 'center',
+    padding: 1,
+    borderStyle: 'round',
+  })
+)
