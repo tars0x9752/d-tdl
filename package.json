@@ -2,8 +2,18 @@
   "name": "daily-todo",
   "version": "0.0.0",
   "type": "module",
+  "scripts": {
+	"prebuild": "rimraf dist",
+    "build": "tsc && chmod +x dist/index.js",
+    "format": "prettier --write ."
+  },
   "devDependencies": {
     "@types/node": "^18.0.3",
+    "rimraf": "^3.0.2",
     "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "boxen": "^7.0.0",
+    "meow": "^10.1.3"
   }
 }
