@@ -2,12 +2,13 @@
   "name": "daily-todo",
   "version": "0.0.0",
   "type": "module",
+  "bin": "dist/bin/cli.js",
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "tsc && chmod +x dist/index.js",
+    "build": "tsc && chmod +x dist/bin/cli.js",
     "format": "prettier --write .",
-    "start": "./dist/index.js",
-    "dev": "node --loader ts-node/esm src/index.ts"
+    "start": "./dist/bin/cli.js",
+    "dev": "node --loader ts-node/esm src/bin/cli.ts"
   },
   "devDependencies": {
     "@types/node": "^18.0.3",
