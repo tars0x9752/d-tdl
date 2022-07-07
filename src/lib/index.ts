@@ -1,27 +1,80 @@
 #!/usr/bin/env node
 
-import Conf from 'conf'
+import Conf, { Schema } from 'conf'
 import boxen from 'boxen'
-import { Store } from '../types/store'
+import { Store, Task, TaskStatus } from '../types/store'
 
-export const main = () => {
-  const store = new Conf<Store>()
+const schema: Schema<Store> = {
+  taskList: {
+    type: 'array',
+    items: {
+      type: 'object',
+      required: ['id', 'text', 'status'],
+      additionalProperties: false,
+      properties: {
+        id: {
+          type: 'string',
+        },
+        text: {
+          type: 'string',
+        },
+        status: {
+          type: 'string',
+          enum: ['todo', 'wip', 'done'],
+        },
+      },
+    },
+  },
+}
 
-  console.log('store path:', store.path)
+const store = new Conf<Store>({ configName: 'store', schema })
 
-  const text = `
-- a
-- b
-- c
-- d
-`
+const taskList = store.get('taskList') ?? []
+
+export const add = (text: string) => {
+  const newTask: Task = {
+    id: `${taskList.length + 1}`,
+    text,
+    status: 'todo',
+  }
+
+  store.set('taskList', [...taskList, newTask])
+}
+
+export const updateStatus = (targetId: string, status: TaskStatus) => {
+  const updated = taskList.map((task) => {
+    const isTarget = task.id === targetId
+
+    return {
+      ...task,
+      status: isTarget ? status : task.status,
+    }
+  })
+
+  store.set('taskList', updated)
+}
+
+export const showList = () => {
+  const text = taskList
+    .map((task) => {
+      return `
+╭─ [id: ${task.id} - ${task.status}]
+╰─ ${task.text}`
+    })
+    .join('\n')
 
   console.log(
-    boxen(text, {
-      title: 'list1',
-      titleAlignment: 'center',
-      textAlignment: 'center',
-      borderStyle: 'round',
-    })
+    text
+    // boxen(text, {
+    //   title: 'daily-todo-list',
+    //   titleAlignment: 'center',
+    //   // textAlignment: 'center',
+    //   borderStyle: 'round',
+    //   // padding: 1,
+    // })
   )
+}
+
+export const showStorePath = () => {
+  console.log('store path:', store.path)
 }

@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
 import meow from 'meow'
-import { main } from '../lib/index.js' // .js extension needed to use "import" keyword in nodejs
+
+// file extension needed to use "import" keyword in nodejs
+import { add, showList, showStorePath, updateStatus } from '../lib/index.js'
 
 const cli = meow(
   `
@@ -28,6 +30,7 @@ const cli = meow(
         type: 'boolean',
         alias: 'l',
         default: true,
+        isMultiple: false,
       },
       add: {
         type: 'string',
@@ -61,6 +64,31 @@ const cli = meow(
   }
 )
 
-console.log(cli)
+const handleCliFlags = () => {
+  if (cli.flags.add) {
+    add(cli.flags.add)
+    return
+  }
 
-main()
+  if (cli.flags.wip) {
+    updateStatus(cli.flags.wip, 'wip')
+    return
+  }
+
+  if (cli.flags.done) {
+    updateStatus(cli.flags.done, 'done')
+    return
+  }
+
+  if (cli.flags.list) {
+    showList()
+    return
+  }
+
+  if (cli.flags.storePath) {
+    showStorePath()
+    return
+  }
+}
+
+handleCliFlags()
