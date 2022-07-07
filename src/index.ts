@@ -1,7 +1,24 @@
 #!/usr/bin/env node
 
 import meow from 'meow'
+import Conf from 'conf'
 import boxen from 'boxen'
+
+type TaskStatus = 'todo' | 'wip' | 'done'
+
+type Task = {
+  id: string
+  text: string
+  status: TaskStatus
+}
+
+type Store = {
+  taskList: Task[]
+}
+
+const store = new Conf<Store>()
+
+console.log('store path:', store.path)
 
 const cli = meow(
   `
@@ -9,11 +26,14 @@ const cli = meow(
 	  $ npm run start 
 
 	Options
-    --add, -a   add a task
-    --list, -l  show task list
+    --add, -a     add a task
+    --list, -l    show task list
     --wip, -w
     --done, -d
     --remove, -r
+    --store-path  show store file path
+
+    --plain-text, -p
 
 	Examples
 	  $ npm run start -- --help
@@ -42,6 +62,18 @@ const cli = meow(
         type: 'string',
         alias: 'r',
       },
+      storePath: {
+        type: 'boolean',
+      },
+
+      /**
+       * disable boxen or not
+       */
+      plainText: {
+        type: 'boolean',
+        alias: 'p',
+        default: false,
+      },
     },
   }
 )
@@ -57,9 +89,9 @@ const text = `
 
 console.log(
   boxen(text, {
-    title: 'list',
+    title: 'list1',
     titleAlignment: 'center',
-    padding: 1,
+    textAlignment: 'center',
     borderStyle: 'round',
   })
 )
