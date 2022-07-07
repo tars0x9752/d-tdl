@@ -1,24 +1,7 @@
 #!/usr/bin/env node
 
 import meow from 'meow'
-import Conf from 'conf'
-import boxen from 'boxen'
-
-type TaskStatus = 'todo' | 'wip' | 'done'
-
-type Task = {
-  id: string
-  text: string
-  status: TaskStatus
-}
-
-type Store = {
-  taskList: Task[]
-}
-
-const store = new Conf<Store>()
-
-console.log('store path:', store.path)
+import { main } from '../lib/index.js' // .js extension needed to use "import" keyword in nodejs
 
 const cli = meow(
   `
@@ -80,18 +63,4 @@ const cli = meow(
 
 console.log(cli)
 
-const text = `
-- a
-- b
-- c
-- d
-`
-
-console.log(
-  boxen(text, {
-    title: 'list1',
-    titleAlignment: 'center',
-    textAlignment: 'center',
-    borderStyle: 'round',
-  })
-)
+main()
