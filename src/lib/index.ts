@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import Conf, { Schema } from 'conf'
-import boxen from 'boxen'
 import { Store, Task, TaskStatus } from '../types/store'
 
 const schema: Schema<Store> = {
@@ -63,16 +62,7 @@ export const showList = () => {
     })
     .join('\n')
 
-  console.log(
-    text
-    // boxen(text, {
-    //   title: 'daily-todo-list',
-    //   titleAlignment: 'center',
-    //   // textAlignment: 'center',
-    //   borderStyle: 'round',
-    //   // padding: 1,
-    // })
-  )
+  console.log(text)
 }
 
 export const showStorePath = () => {
