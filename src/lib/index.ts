@@ -30,6 +30,15 @@ const store = new Conf<Store>({ configName: 'store', schema })
 
 const taskList = store.get('taskList') ?? []
 
+const hasTargetId = (targetId: string) => {
+  const res = taskList.find((task) => task.id === targetId)
+
+  if (res === undefined) {
+    console.error('[ERROR]: Invalid id.')
+    process.exit(1)
+  }
+}
+
 export const add = (text: string) => {
   const newTask: Task = {
     id: `${taskList.length + 1}`,
@@ -41,6 +50,8 @@ export const add = (text: string) => {
 }
 
 export const updateStatus = (targetId: string, status: TaskStatus) => {
+  hasTargetId(targetId)
+
   const updated = taskList.map((task) => {
     const isTarget = task.id === targetId
 
@@ -49,6 +60,14 @@ export const updateStatus = (targetId: string, status: TaskStatus) => {
       status: isTarget ? status : task.status,
     }
   })
+
+  store.set('taskList', updated)
+}
+
+export const remove = (targetId: string) => {
+  hasTargetId(targetId)
+
+  const updated = taskList.filter((task) => task.id !== targetId)
 
   store.set('taskList', updated)
 }
