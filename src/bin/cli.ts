@@ -3,7 +3,7 @@
 import meow from 'meow'
 
 // file extension needed to use "import" keyword in nodejs
-import { add, showList, showStorePath, updateStatus } from '../lib/index.js'
+import { add, remove, showList, showStorePath, updateStatus } from '../lib/index.js'
 
 const cli = meow(
   `
@@ -11,8 +11,8 @@ const cli = meow(
 	  $ npm run start 
 
 	Options
-    --add, -a     add a task
     --list, -l    show task list
+    --add, -a     add a task
     --wip, -w
     --done, -d
     --remove, -r
@@ -29,8 +29,6 @@ const cli = meow(
       list: {
         type: 'boolean',
         alias: 'l',
-        default: true,
-        isMultiple: false,
       },
       add: {
         type: 'string',
@@ -51,20 +49,32 @@ const cli = meow(
       storePath: {
         type: 'boolean',
       },
-
-      /**
-       * disable boxen or not
-       */
-      plainText: {
+      lsTodo: {
         type: 'boolean',
-        alias: 'p',
-        default: false,
+      },
+      lsWip: {
+        type: 'boolean',
+      },
+      lsDone: {
+        type: 'boolean',
       },
     },
   }
 )
 
 const handleCliFlags = () => {
+  const flagCount = Object.entries(cli.flags).filter(([, v]) => !!v).length
+
+  if (flagCount > 1) {
+    console.error('[ERROR]: Multiple flags are not allowed.')
+    process.exit(1)
+  }
+
+  if (cli.flags.list) {
+    showList()
+    return
+  }
+
   if (cli.flags.add) {
     add(cli.flags.add)
     return
@@ -80,8 +90,8 @@ const handleCliFlags = () => {
     return
   }
 
-  if (cli.flags.list) {
-    showList()
+  if (cli.flags.remove) {
+    remove(cli.flags.remove)
     return
   }
 
