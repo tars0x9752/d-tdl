@@ -15,102 +15,79 @@ const cli = meow(
 	  $ npm run start 
 
 	Options
-    --list, -l    show task list
-    --add, -a     add a task
-    --wip, -w
-    --done, -d
-    --remove, -r
-    --store-path  show store file path
-
-    --plain-text, -p
+    --help
+    --version
 
 	Examples
 	  $ npm run start -- --help
 `,
   {
     importMeta: import.meta,
-    flags: {
-      list: {
-        type: 'boolean',
-        alias: 'l',
-      },
-      add: {
-        type: 'string',
-        alias: 'a',
-      },
-      wip: {
-        type: 'string',
-        alias: 'w',
-      },
-      done: {
-        type: 'string',
-        alias: 'd',
-      },
-      remove: {
-        type: 'string',
-        alias: 'r',
-      },
-      storePath: {
-        type: 'boolean',
-      },
-      lsTodo: {
-        type: 'boolean',
-      },
-      lsWip: {
-        type: 'boolean',
-      },
-      lsDone: {
-        type: 'boolean',
-      },
-    },
   }
 )
 
 const main = async () => {
-  const flagCount = Object.entries(cli.flags).filter(([, v]) => !!v).length
-
-  if (flagCount > 1) {
-    console.error('[ERROR]: Multiple flags are not allowed.')
-    process.exit(1)
-  }
-
-  if (cli.flags.list) {
-    showList()
-    return
-  }
-
-  if (cli.flags.add) {
-    add(cli.flags.add)
-    return
-  }
-
-  if (cli.flags.wip) {
-    updateStatus(cli.flags.wip, 'wip')
-    return
-  }
-
-  if (cli.flags.done) {
-    updateStatus(cli.flags.done, 'done')
-    return
-  }
-
-  if (cli.flags.remove) {
-    remove(cli.flags.remove)
-    return
-  }
-
-  if (cli.flags.storePath) {
-    showStorePath()
-    return
-  }
+  const actionList = ['list', 'add', 'done', 'wip', 'remove', 'show-store-path', 'quit'] as const
 
   // default
-  const res = await prompt({
+  const { action } = await prompt<{ action: typeof actionList[number] }>({
     type: 'select',
-    name: 'menu',
-    message: 'Select an action',
-    choices: ['list', 'add', 'done', 'modify', 'remove', 'reset'],
+    name: 'action',
+    message: 'Action',
+    choices: ['list', 'add', 'done', 'wip', 'remove', 'show-store-path', 'quit'],
   })
+
+  const handle = {
+    list: () => {
+      showList()
+    },
+    add: async () => {
+      const res = await prompt<{ task: string }>({
+        type: 'input',
+        name: 'task',
+        message: 'task',
+      })
+
+      add(res.task)
+      showList()
+    },
+    done: async () => {
+      const res = await prompt<{ id: string }>({
+        type: 'input',
+        name: 'id',
+        message: 'done id',
+      })
+
+      updateStatus(res.id, 'done')
+      showList()
+    },
+    wip: async () => {
+      const res = await prompt<{ id: string }>({
+        type: 'input',
+        name: 'id',
+        message: 'wip id',
+      })
+
+      updateStatus(res.id, 'wip')
+      showList()
+    },
+    remove: async () => {
+      const res = await prompt<{ id: string }>({
+        type: 'input',
+        name: 'id',
+        message: 'remove id',
+      })
+
+      remove(res.id)
+      showList()
+    },
+    'show-store-path': () => {
+      showStorePath()
+    },
+    quit: () => {},
+  }[action]
+
+  handle()
 }
 
 main()

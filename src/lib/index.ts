@@ -28,9 +28,22 @@ const schema: Schema<Store> = {
 
 const store = new Conf<Store>({ configName: 'store', schema })
 
-const taskList = store.get('taskList') ?? []
+const getTaskList = () => {
+  const _taskList = store.get('taskList') ?? []
 
-const hasTargetId = (targetId: string) => {
+  const taskList = _taskList.map((v, i) => {
+    return {
+      ...v,
+      id: `${i + 1}`,
+    }
+  })
+
+  store.set('taskList', taskList)
+
+  return taskList
+}
+
+const hasTargetId = (targetId: string, taskList: Task[]) => {
   const res = taskList.find((task) => task.id === targetId)
 
   if (res === undefined) {
@@ -40,6 +53,8 @@ const hasTargetId = (targetId: string) => {
 }
 
 export const add = (text: string) => {
+  const taskList = getTaskList()
+
   const newTask: Task = {
     id: `${taskList.length + 1}`,
     text,
@@ -50,7 +65,9 @@ export const add = (text: string) => {
 }
 
 export const updateStatus = (targetId: string, status: TaskStatus) => {
-  hasTargetId(targetId)
+  const taskList = getTaskList()
+
+  hasTargetId(targetId, taskList)
 
   const updated = taskList.map((task) => {
     const isTarget = task.id === targetId
@@ -65,7 +82,9 @@ export const updateStatus = (targetId: string, status: TaskStatus) => {
 }
 
 export const remove = (targetId: string) => {
-  hasTargetId(targetId)
+  const taskList = getTaskList()
+
+  hasTargetId(targetId, taskList)
 
   const updated = taskList.filter((task) => task.id !== targetId)
 
@@ -73,6 +92,8 @@ export const remove = (targetId: string) => {
 }
 
 export const showList = () => {
+  const taskList = getTaskList()
+
   const text = taskList
     .map((task) => {
       return `
