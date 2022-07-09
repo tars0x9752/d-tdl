@@ -2,6 +2,10 @@
 
 import meow from 'meow'
 
+import enq from 'enquirer'
+
+const { prompt } = enq
+
 // file extension needed to use "import" keyword in nodejs
 import { add, remove, showList, showStorePath, updateStatus } from '../lib/index.js'
 
@@ -62,7 +66,7 @@ const cli = meow(
   }
 )
 
-const handleCliFlags = () => {
+const main = async () => {
   const flagCount = Object.entries(cli.flags).filter(([, v]) => !!v).length
 
   if (flagCount > 1) {
@@ -99,6 +103,14 @@ const handleCliFlags = () => {
     showStorePath()
     return
   }
+
+  // default
+  const res = await prompt({
+    type: 'select',
+    name: 'menu',
+    message: 'Select an action',
+    choices: ['list', 'add', 'done', 'modify', 'remove', 'reset'],
+  })
 }
 
-handleCliFlags()
+main()
