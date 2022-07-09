@@ -2,6 +2,10 @@
 
 import meow from 'meow'
 
+import enq from 'enquirer'
+
+const { prompt } = enq
+
 // file extension needed to use "import" keyword in nodejs
 import { add, remove, showList, showStorePath, updateStatus } from '../lib/index.js'
 
@@ -11,94 +15,79 @@ const cli = meow(
 	  $ npm run start 
 
 	Options
-    --list, -l    show task list
-    --add, -a     add a task
-    --wip, -w
-    --done, -d
-    --remove, -r
-    --store-path  show store file path
-
-    --plain-text, -p
+    --help
+    --version
 
 	Examples
 	  $ npm run start -- --help
 `,
   {
     importMeta: import.meta,
-    flags: {
-      list: {
-        type: 'boolean',
-        alias: 'l',
-      },
-      add: {
-        type: 'string',
-        alias: 'a',
-      },
-      wip: {
-        type: 'string',
-        alias: 'w',
-      },
-      done: {
-        type: 'string',
-        alias: 'd',
-      },
-      remove: {
-        type: 'string',
-        alias: 'r',
-      },
-      storePath: {
-        type: 'boolean',
-      },
-      lsTodo: {
-        type: 'boolean',
-      },
-      lsWip: {
-        type: 'boolean',
-      },
-      lsDone: {
-        type: 'boolean',
-      },
-    },
   }
 )
 
-const handleCliFlags = () => {
-  const flagCount = Object.entries(cli.flags).filter(([, v]) => !!v).length
+const main = async () => {
+  const actionList = ['list', 'add', 'done', 'wip', 'remove', 'show-store-path', 'quit'] as const
 
-  if (flagCount > 1) {
-    console.error('[ERROR]: Multiple flags are not allowed.')
-    process.exit(1)
-  }
+  // default
+  const { action } = await prompt<{ action: typeof actionList[number] }>({
+    type: 'select',
+    name: 'action',
+    message: 'Action',
+    choices: ['list', 'add', 'done', 'wip', 'remove', 'show-store-path', 'quit'],
+  })
 
-  if (cli.flags.list) {
-    showList()
-    return
-  }
+  const handle = {
+    list: () => {
+      showList()
+    },
+    add: async () => {
+      const res = await prompt<{ task: string }>({
+        type: 'input',
+        name: 'task',
+        message: 'task',
+      })
 
-  if (cli.flags.add) {
-    add(cli.flags.add)
-    return
-  }
+      add(res.task)
+      showList()
+    },
+    done: async () => {
+      const res = await prompt<{ id: string }>({
+        type: 'input',
+        name: 'id',
+        message: 'done id',
+      })
 
-  if (cli.flags.wip) {
-    updateStatus(cli.flags.wip, 'wip')
-    return
-  }
+      updateStatus(res.id, 'done')
+      showList()
+    },
+    wip: async () => {
+      const res = await prompt<{ id: string }>({
+        type: 'input',
+        name: 'id',
+        message: 'wip id',
+      })
 
-  if (cli.flags.done) {
-    updateStatus(cli.flags.done, 'done')
-    return
-  }
+      updateStatus(res.id, 'wip')
+      showList()
+    },
+    remove: async () => {
+      const res = await prompt<{ id: string }>({
+        type: 'input',
+        name: 'id',
+        message: 'remove id',
+      })
 
-  if (cli.flags.remove) {
-    remove(cli.flags.remove)
-    return
-  }
+      remove(res.id)
+      showList()
+    },
+    'show-store-path': () => {
+      showStorePath()
+    },
+    quit: () => {},
+  }[action]
 
-  if (cli.flags.storePath) {
-    showStorePath()
-    return
-  }
+  handle()
 }
 
-handleCliFlags()
+main()
